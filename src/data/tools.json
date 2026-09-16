@@ -52115,5 +52115,62 @@
       "Robotics",
       "Software"
     ]
+  },
+  {
+    "featured": false,
+    "status": "active",
+    "last_verified": "2026-09-22",
+    "access_methods": [
+      "Web App",
+      "iOS App",
+      "Android App",
+      "Desktop App"
+    ],
+    "compliance": {
+      "soc2": null,
+      "iso27001": null,
+      "gdpr": true,
+      "hipaa": null
+    },
+    "compliance_sources": {
+      "gdpr": "https://studyarena.com/legal/privacy-policy"
+    },
+    "data_storage": {
+      "region": null,
+      "trains_on_data": null,
+      "self_hostable": null
+    },
+    "id": "1025",
+    "name": "StudyArena",
+    "slug": "studyarena",
+    "category": "Education",
+    "subcategory": "Study Tools",
+    "description": "StudyArena lets students ask one study question and compare three anonymous AI answers side by side, vote for the most useful one, then reveal which models wrote them.",
+    "url": "https://studyarena.com",
+    "tags": [
+      "study tools",
+      "answer comparison",
+      "model comparison",
+      "homework help",
+      "ai learning"
+    ],
+    "pricing": "Freemium",
+    "pricing_detail": {
+      "free_tier": "Three-model blind comparisons with voting, model reveals and saved history, 100 generated images a month and 2 GB of storage. A free account is required to ask.",
+      "paid_plans": "Supporter is $20 per month and adds model choice, six-model comparisons, 10,000 generated images a month and 20 GB of storage.",
+      "api_cost": null
+    },
+    "use_cases": [
+      "Comparing how several AI models explain the same coursework question",
+      "Checking an answer against independent responses before relying on it",
+      "Turning lecture notes into practice questions"
+    ],
+    "not_good_for": [
+      "Anyone who needs a named model every time, the free plan answers blind",
+      "Work where a vendor must state where data is held, the model pool changes"
+    ],
+    "industries": [
+      "Education"
+    ]
   }
 ]
