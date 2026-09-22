@@ -5245,6 +5245,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://aifoxx.com/ai/studyarena</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://aifoxx.com/ai/submagic</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>weekly</changefreq>
