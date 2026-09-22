@@ -8,12 +8,15 @@
  * OUTPUT (generated, gitignored, rebuilt on every dev/build):
  *   - src/data/tools-index.json     light catalog (everything except HEAVY)
  *   - src/data/tools/<slug>.json    heavy detail fields, loaded per tool page
+ *   - src/data/trust-badges-light.json  certifications and yes/no flags per tool
+ *   - src/data/trust-regions.json       data-region text, loaded by comparisons
  *
  * Deterministic: same tools.json always yields identical output.
  */
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertValidSlug } from "./slug.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, "..", "src", "data");
@@ -50,6 +53,7 @@ function main() {
     }
     index.push(light);
     if (Object.keys(heavy).length > 0) {
+      assertValidSlug(tool.slug);
       writeFileSync(join(DETAIL_DIR, `${tool.slug}.json`), JSON.stringify(heavy) + "\n", "utf8");
       keep.add(`${tool.slug}.json`);
     }
@@ -61,6 +65,19 @@ function main() {
   }
 
   writeFileSync(INDEX_OUT, JSON.stringify(index) + "\n", "utf8");
+
+  // The data-region text is long and only the comparison table shows it, so it
+  // is kept out of the badge summary that every page loads.
+  const badges = JSON.parse(readFileSync(join(DATA, "trust-badges.json"), "utf8"));
+  const light = {};
+  const regions = {};
+  for (const [slug, b] of Object.entries(badges)) {
+    const { region, ...rest } = b;
+    light[slug] = rest;
+    if (region) regions[slug] = region;
+  }
+  writeFileSync(join(DATA, "trust-badges-light.json"), JSON.stringify(light) + "\n", "utf8");
+  writeFileSync(join(DATA, "trust-regions.json"), JSON.stringify(regions) + "\n", "utf8");
   const idxKb = (readFileSync(INDEX_OUT).length / 1024).toFixed(0);
   console.log(`Split ${tools.length} tools -> tools-index.json (${idxKb} KB) + tools/ (${keep.size} detail files)`);
 }

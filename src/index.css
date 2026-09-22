@@ -299,8 +299,11 @@ body::after {
 }
 
 /* ── PREVENT HORIZONTAL OVERFLOW ── */
+/* clip, not hidden: hidden turns the page into its own scroll area, which
+   stops the header and sidebar from staying in view while scrolling. */
 html, body {
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
 }
 
@@ -597,3 +600,16 @@ html, body {
 [data-theme="light"] .pricing-badge.pricing-contact-sales,
 [data-theme="notebook"] .pricing-badge.pricing-contact-sales,
 [data-theme="sepia"] .pricing-badge.pricing-contact-sales { color: #374151; background: #eceff3; border-color: #b8c0ca; }
+
+/* Visitors who ask their system for less motion get a still page: no flicker,
+   sweeps, floating logo or scanline. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

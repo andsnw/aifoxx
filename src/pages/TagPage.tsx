@@ -5,6 +5,8 @@ import { ToolCard } from "@/components/tools/ToolCard";
 import { PageMeta } from "@/components/seo/PageMeta";
 import { JsonLd } from "@/components/seo/JsonLd";
 import Brand from "@/lib/brand";
+import { hasTagPage } from "@/lib/tags";
+import NotFoundPage from "./NotFoundPage";
 
 export default function TagPage() {
   const { tag } = useParams<{ tag: string }>();
@@ -17,7 +19,7 @@ export default function TagPage() {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `#${tagValue} AI Tools`,
-    "description": `${tools.length} AI tools tagged with #${tagValue} on AIFOXX.`,
+    "description": `${tools.length} AI tools tagged with #${tagValue} on ${Brand.product.name_styled}.`,
     "url": `https://${Brand.product.domain}/tag/${encodedTag}`,
     "mainEntity": {
       "@type": "ItemList",
@@ -30,11 +32,18 @@ export default function TagPage() {
     },
   }), [encodedTag, tagValue, tools]);
 
+  const topNames = tools.filter((t) => t.popular).concat(tools.filter((t) => !t.popular)).slice(0, 3).map((t) => t.name);
+  const tagDescription = `${tools.length} AI tools tagged #${tagValue}, including ${topNames.join(", ")}. Compare pricing, free tiers, SOC 2 and GDPR compliance.`.slice(0, 160);
+
+  // A tag with no page of its own gets the normal 404, so a made-up tag in the
+  // address cannot produce a branded page showing whatever text was typed.
+  if (!hasTagPage(tagValue)) return <NotFoundPage />;
+
   return (
     <>
       <PageMeta
         title={`#${tagValue} AI Tools | ${Brand.product.name_styled}`}
-        description={`${tools.length} AI tools tagged with #${tagValue}. Browse and compare.`}
+        description={tagDescription}
         url={`https://${Brand.product.domain}/tag/${encodedTag}`}
         robots={tools.length === 0 ? "noindex, follow" : undefined}
       />

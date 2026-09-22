@@ -1,15 +1,30 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate, useLoaderData } from "react-router-dom";
+import type { TrustRegions } from "@/lib/trust-regions";
 import { getToolBySlug, normalizeTaxonomyValue } from "@/lib/tools";
 import { PageMeta } from "@/components/seo/PageMeta";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ComparisonView } from "@/components/tools/ComparisonView";
 import NotFoundPage from "./NotFoundPage";
 import Brand from "@/lib/brand";
+import { hasUsableFreeTier } from "@/lib/tool-filters";
+import type { Tool } from "@/types/tool";
+import { fitTitle } from "@/lib/page-title";
 
 const DOMAIN = `https://${Brand.product.domain}`;
 
-function hasFreeTier(pricing: string): boolean {
-  return pricing === "Free" || pricing === "Freemium" || pricing === "Open Source";
+
+// Same rule as the catalog's free-tier filter, so the two never disagree.
+const hasFreeTier = (tool: Tool) => hasUsableFreeTier(tool);
+
+/** Pricing model as a phrase that reads in a sentence. */
+function pricingPhrase(tool: Tool): string {
+  switch (tool.pricing) {
+    case "Contact Sales": return "priced on request";
+    case "Pay-as-you-go": return "pay-as-you-go";
+    case "Usage Based": return "usage based";
+    case "Open Source": return "open source";
+    default: return tool.pricing.toLowerCase();
+  }
 }
 
 /**
@@ -20,10 +35,13 @@ function hasFreeTier(pricing: string): boolean {
  */
 export default function CompareVsPage() {
   const { slugA, slugB } = useParams<{ slugA: string; slugB: string }>();
+  const regions = (useLoaderData() as TrustRegions | null) ?? undefined;
   const a = slugA ? getToolBySlug(slugA) : undefined;
   const b = slugB ? getToolBySlug(slugB) : undefined;
 
   if (!a || !b || a.slug === b.slug) return <NotFoundPage />;
+  // Each pair has one address, with the slugs in alphabetical order.
+  if (a.slug > b.slug) return <Navigate to={`/compare/${b.slug}/vs/${a.slug}`} replace />;
 
   const tools = [a, b];
   const pageUrl = `${DOMAIN}/compare/${a.slug}/vs/${b.slug}`;
@@ -31,13 +49,13 @@ export default function CompareVsPage() {
   const intro = `Compare ${a.name} and ${b.name} side by side: pricing, compliance (SOC 2, ISO 27001, GDPR, HIPAA), access methods, and how each one handles your data.`;
 
   const freeAnswer =
-    hasFreeTier(a.pricing) && hasFreeTier(b.pricing)
+    hasFreeTier(a) && hasFreeTier(b)
       ? `Both ${a.name} and ${b.name} offer a free or freemium tier.`
-      : hasFreeTier(a.pricing)
-        ? `${a.name} offers a free or freemium tier, while ${b.name} is ${b.pricing.toLowerCase()}.`
-        : hasFreeTier(b.pricing)
-          ? `${b.name} offers a free or freemium tier, while ${a.name} is ${a.pricing.toLowerCase()}.`
-          : `Neither lists a free tier. ${a.name} is ${a.pricing.toLowerCase()} and ${b.name} is ${b.pricing.toLowerCase()}.`;
+      : hasFreeTier(a)
+        ? `${a.name} offers a free or freemium tier, while ${b.name} is ${pricingPhrase(b)}.`
+        : hasFreeTier(b)
+          ? `${b.name} offers a free or freemium tier, while ${a.name} is ${pricingPhrase(a)}.`
+          : `Neither lists a free tier. ${a.name} is ${pricingPhrase(a)} and ${b.name} is ${pricingPhrase(b)}.`;
 
   const faqs = [
     {
@@ -50,7 +68,12 @@ export default function CompareVsPage() {
   return (
     <>
       <PageMeta
-        title={`${heading}: Pricing, Compliance & Features Compared | ${Brand.product.name_styled}`}
+        title={fitTitle([
+          `${heading}: Pricing, Compliance & Features Compared | ${Brand.product.name_styled}`,
+          `${heading}: Pricing & Compliance | ${Brand.product.name_styled}`,
+          `${heading} Compared | ${Brand.product.name_styled}`,
+          `${heading} | ${Brand.product.name_styled}`,
+        ])}
         description={`${a.name} vs ${b.name}: compare pricing, compliance, access methods, and data handling side by side.`}
         url={pageUrl}
         keywords={[
@@ -87,7 +110,7 @@ export default function CompareVsPage() {
 
       <div className="max-w-6xl mx-auto w-full px-4 py-6 md:py-8 space-y-6">
         {/* Breadcrumb */}
-        <nav className="font-mono text-xs text-text-muted flex gap-2 items-center flex-wrap">
+        <nav aria-label="Breadcrumb" className="font-mono text-xs text-text-muted flex gap-2 items-center flex-wrap">
           <Link to="/" className="hover:text-text-primary transition-colors">HOME</Link>
           <span className="text-accent-green">&gt;</span>
           <Link to="/compare" className="hover:text-text-primary transition-colors">COMPARE</Link>
@@ -106,7 +129,7 @@ export default function CompareVsPage() {
           <p className="font-mono text-sm text-text-secondary max-w-2xl leading-relaxed">{intro}</p>
         </header>
 
-        <ComparisonView tools={tools} />
+        <ComparisonView tools={tools} regions={regions} />
 
         {/* Add a third tool */}
         <Link
